@@ -1,5 +1,3 @@
-# Closed-Loop BCI for Attention Regulation
-
 ## Citation
 If you find anything in the paper or repository useful, please consider citing:
 ```
