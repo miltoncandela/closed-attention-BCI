@@ -18,10 +18,6 @@ y <- df[,'RT']
 x <- x[,-dim(x)[2]]
 x2 <- df
 
-# y =  (1 - ((y - 0.2)/(0.7-0.2))) * 100
-# y = (1 - ((y - min(y))/(max(y)-min(y)))) * 100
-
-# Step 3: Loop through specified bands to calculate averages and drop original columns
 bands <- c('Delta', 'Theta', 'Alpha', 'Beta', 'Gamma')
 for (band in bands) {
      # Create new averaged column
@@ -29,68 +25,58 @@ for (band in bands) {
 }
 x2 <- x2[, -c(1:10)]
 
-#for (band in bands) {
-     #     x2[, paste0(band, '2')] <- x2[, band] * x2[, band]
-#}
-
 for (band in bands) {
      x2 <- x2[abs(x2[,band]) < 3,]
 }
 
-y <- x2['RT']
-x2 <- x2[,-1]
-y = (1 - ((y - min(y))/(max(y)-min(y)))) * 100
+y <- x2['RT']; x2 <- x2[,-1]
 
-#combinations <- combn(names(x2), 2, simplify = FALSE)
-
-#for (combo in combinations){
-#     feature_name <- paste(combo, collapse = '_')
-#     x2[feature_name] <- x2[combo[1]] * 1/x2[combo[2]]
-#}
-
+y <- (1 - ((y - min(y))/(max(y)-min(y)))) * 100
 x2['RT'] <- y
 
-model <- lm(RT ~ Theta + Alpha + Beta + 0, data = x2)
-summary(model)$r.squared
-
-a <- x2$Beta/(x2$Alpha + x2$Theta)
-model <- lm(x2$RT ~ a + 0)
-summary(model)$r.squared
-
-model <- lm(RT ~ ., data = x2)
-summary(model)$r.squared
-
-y <- x2[,'RT']
-x2 <- x2[,-1]
-
-library(glmnet)
-cv_model <- cv.glmnet(as.matrix(x2), y, alpha = 0.1, intercept = FALSE)
-best_lambda <- cv_model$lambda.min
-plot(cv_model)
-
-best_model <- glmnet(as.matrix(x2), y, alpha = 0.1, lambda = best_lambda, intercept = FALSE)
-coef(best_model)
-
-ridge_model <- glmnet(x2, y, alpha = 0, intercept = FALSE)
-
-
-# y = -222 theta + 93 alpha - 90 beta + 20 delta
-# y = -200 theta + 95 alpha - 90 beta
-
-
+y <- x2[,'RT']; x2 <- x2[,-1]
 x3 <- x2[order(x2$RT),]
 
-#mod_propue <- with(x3, - 2.5*Theta + Alpha - Beta)
-# mod_propue <- with(x3, (-2.5*Theta)/(Alpha - Beta) + 1)
 mod_propue <- with(x3, -6*Theta + 2*Alpha - 2*Beta)
-# mod_propue <- with(x3, - 2*Alpha - 1.5*Theta - 0.5*Beta)
 print(1 - (sum((x3$RT - mod_propue*40)^2) / sum((x3$RT - mean(x3$RT))^2)))
 print(mean((mod_propue*40 - x3$RT)^2))
-
 
 mod_normal <- with(x3, Beta/(Alpha + Theta))
 print(1 - (sum((x3$RT - mod_normal*15)^2) / sum((x3$RT - mean(x3$RT))^2)))
 print(mean((mod_normal*15 - x3$RT)^2))
+
+
+############### END PROCESSING ###############
+
+pdf('Fig3.pdf', width=10, height=5)
+# png('Fig3.png')
+par(mfrow = c(1, 2))
+
+# Histogram plot
+# png('histrt.png')
+
+x <- read.csv('C:/Users/Milton/PycharmProjects/ALAS/BSN/processed/EEG_Z39S39N100_R.csv')
+x <- na.omit(x)
+hist(x$RT, xlab = 'Reaction Time (RT) [s]', ylab = 'n', main = 'A)', xlim = c(0, 1.2))
+abline(v = c(0.2, 0.7), lty = 2, col = 'red')
+legend('topright', lty = 2, col = 'red', legend = 'Cut-off', bty = 'n')
+
+# SINDy resid plot
+# png('sindyresid.png')
+
+plot(x3$RT -  mod_normal*100, col = 'red', ylab = 'Residuals', main = 'B)',
+     xlab = 'Participant No.', ylim = c(-375, 375), axes=FALSE)
+points(x3$RT - mod_propue*40, col = 'blue')
+abline(h = 100, lty = 2)
+abline(h = -100, lty = 2)
+axis(1, at = seq(1, 15, 2))
+axis(2, at = c(-400, -100, 0, 100, 400))
+legend('topleft', legend = c('Model', 'Eng. Index'), pch = 1,
+       col = c('blue', 'red'), bty = 'n')
+
+dev.off()
+
+############### OLD PLOTS ###############
 
 png('sindyfig.png')
 plot(x3$RT, ylim = c(0, 125), axes = FALSE, xlab = 'Participant No.',
@@ -108,27 +94,7 @@ plot(x3$RT, ylim = c(0, 125), axes = FALSE, xlab = 'Participant No.',
      ylab = 'Engagement score: Min-max (1/RT)')
 # points(mod_propue)
 
-png('sindyresid.png')
-
-plot(x3$RT -  mod_normal*100, col = 'red', ylab = 'Residuals',
-     xlab = 'Participant No.', ylim = c(-375, 375), axes=FALSE)
-points(x3$RT - mod_propue*40, col = 'blue')
-abline(h = 100, lty = 2)
-abline(h = -100, lty = 2)
-axis(1, at = seq(1, 15, 2))
-axis(2, at = c(-400, -100, 0, 100, 400))
-legend('topleft', legend = c('Model', 'Eng. Index'), pch = 1,
-       col = c('blue', 'red'), bty = 'n')
-dev.off()
-
 plot(x3$RT - mod_propue*40, col = 'blue')
 points(x3$RT - mod_normal*100, col = 'red')
 
-
-# Histogram plot
-png('histrt.png')
-hist(x$RT, xlab = 'Reaction Time (RT) [s]', ylab = 'n', main = '', xlim = c(0, 1))
-abline(v = c(0.2, 0.7), lty = 2, col = 'red')
-legend('topright', lty = 2, col = 'red', legend = 'Cutoff Thresh.', bty = 'n')
-dev.off()
 
