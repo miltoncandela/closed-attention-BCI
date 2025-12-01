@@ -15,3 +15,6 @@ If you find anything in the paper or repository useful, please consider citing:
   pages = {}
 }
 ```
+
+## Data
+Raw data is available upon reasonable request.
