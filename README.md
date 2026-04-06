@@ -13,10 +13,11 @@ If you find anything in the paper or repository useful, please consider citing:
   year = {2026},
   pages = {261–269}
 }
+```
+
 > Candela-Leal MO, Marrufo-Franco LA, Ruiz-de-la-Fuente BH, Cruz-Gómez CF, & Ramirez-Moreno MA (2026)<br>
 > **Closed-Loop Haptic Neurofeedback BCI for Real-Time Student Attention Regulation**<br>
 > Proceedings of the XLVIII Mexican Conference on Biomedical Engineering. https://doi.org/10.1007/978-3-032-13729-6_28
-```
 
 ## Data
 Raw data is available upon reasonable request.
